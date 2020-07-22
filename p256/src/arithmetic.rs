@@ -42,8 +42,8 @@ const CURVE_EQUATION_B: FieldElement = FieldElement([
 #[derive(Clone, Copy, Debug)]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub struct AffinePoint {
-    x: FieldElement,
-    y: FieldElement,
+    pub(crate) x: FieldElement,
+    pub(crate) y: FieldElement,
 }
 
 impl ConditionallySelectable for AffinePoint {
@@ -176,7 +176,7 @@ impl FixedBaseScalarMul for NistP256 {
     /// Multiply the given scalar by the generator point for this elliptic
     /// curve.
     fn mul_base(scalar_bytes: &ScalarBytes) -> CtOption<Self::Point> {
-        Scalar::from_bytes((*scalar_bytes).into())
+        Scalar::from_bytes(scalar_bytes.as_ref())
             .and_then(|scalar| (&ProjectivePoint::generator() * &scalar).to_affine())
     }
 }
@@ -537,7 +537,7 @@ impl GenerateSecretKey for NistP256 {
         loop {
             rng.fill_bytes(&mut bytes);
 
-            if Scalar::from_bytes(bytes).is_some().into() {
+            if Scalar::from_bytes(&bytes).is_some().into() {
                 return SecretKey::new(bytes.into());
             }
         }
